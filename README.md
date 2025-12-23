@@ -32,6 +32,7 @@ This repo uses Microsoft Graph, so we need an Entra app to get auth tokens.
 2. In the file `taskpane.js`, replace `[APPLICATION ID]` and `[TENANT ID]` with the application and tenant IDs from the app registration.
 3. Run the command `npm install`.
 4. Run the command `npm start`.
+    - From the [Microsoft sample add-in](https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/hello-world/outlook-hello-world) used as the basis for this one: If you've never developed an Office add-in on this computer before or it has been more than 30 days since you last did, you'll be prompted to delete an old security certificate and/or install a new one. Agree to both prompts.
 5. Open an email and open the apps menu. Click the "Dialog API Bug Demo" button. A dialog with two buttons (one to delete an email and one to cancel) should appear.
 6. Click the button to delete the email and wait for the email to be deleted.
 7. Open a different email, open the apps menu, and click the "Dialog API Bug Demo" button.
