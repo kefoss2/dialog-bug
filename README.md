@@ -12,10 +12,10 @@ The `main` branch of this repo reproduces this error in the scenario closest to 
 
 This repo uses Microsoft Graph, so we need an Entra app to get auth tokens.
 
-1. In Entra, go to "App registrations" and click "New registration".
-2. Add a name for the app. Add two redirect URIs of type "Single-page application (SPA)": `brk-multihub://localhost:3000` and `http://localhost:3000/taskpane.html`.
-3. Click "Register".
-4. On the "Overview" page for the new app, write down the "Application (client) ID" and "Directory (tenant) ID" numbers to be added to the local add-in later.
+1. In Entra, go to "App registrations" and click "New registration". 
+2. Add a name for the app. Add a redirect URI of type "Single-page application (SPA)": `brk-multihub://localhost:3000`. Click "Register".
+3. On the "Overview" page for the new app, write down the "Application (client) ID" and "Directory (tenant) ID" numbers to be added to the local add-in later.
+4. On the "Authentication" tab, click "Add Redirect URI" and click "Single-page application". Enter the redirect URI `http://localhost:3000/taskpane.html` and click "Configure".
 5. On the "API permissions" tab, click "Add a permission", click "Microsoft Graph", and click "Delegated Permissions". Add the permission `Mail.ReadWrite`.
 6. On the same page, click "Grant admin consent for MSFT".
 
@@ -23,7 +23,7 @@ This repo uses Microsoft Graph, so we need an Entra app to get auth tokens.
 
 1. Log into an email account from the tenant with the app registration from the last section in OWA.
 2. Go to `aka.ms/olksideload`, and in the menu that appears, go to "My add-ins" and click "Add a custom add-in".
-3. Install the manifest file `manifest-localhost.xml`. Do a hard reload.
+3. Install the manifest file `manifest-localhost.xml`. Empty the cache and do a hard reload.
 4. Open an email and open the apps menu. An app with the name "Dialog API Bug Demo" should appear.
 
 ### Run the add-in locally and reproduce the bug
