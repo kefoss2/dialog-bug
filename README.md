@@ -1,2 +1,2 @@
 # dialog-bug
-test
+Test
