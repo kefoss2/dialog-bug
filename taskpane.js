@@ -8,71 +8,23 @@ let readWriteToken = "";
 function deleteEmail(event){
     Office.onReady(async function (info) {
         console.log("Starting delete function");
+
+        //get graph auth token
+        await getGraphToken();
         
         //display dialog
         clickEvent = event;
-        let dialogResult = await openDialog();
-        let dialogCallbackResult = await dialogCallback(dialogResult);
+        openDialog();
 
-        //delete email if user selected "delete"
-        if(dialogCallbackResult.event.message === 'move'){
-            console.log("Deleting email");
-            //get graph auth token
-            await getGraphToken();
-            
-            await moveEmailToDelete();
-        }
-        
         console.log("Function finished");
-        clickEvent.completed();
-
-    });
-}
-
-async function openDialog() {
-    return new Promise((resolve, _) => {
-        Office.context.ui.displayDialogAsync(PROMPT_URL, { height: 50, width: 50, displayInIframe: true }, resolve);
-    });
-}
-
-function dialogCallback(asyncResult) {
-    if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
-        console.error("displayDialogAsync failed", asyncResult.error);
-        if (clickEvent) {
-            clickEvent.completed();
-        }
-        return;
-    }
-    return new Promise((resolve, reject) => {
-        try{
-            dialog = asyncResult.value;
-
-            // capture message "cancel" or "move" sent from script in Prompt.html
-            dialog.addEventHandler(Office.EventType.DialogMessageReceived, function(arg) {
-                console.log(`Received message "${arg.message}" from prompt dialog.`);
-                dialog.close();
-                resolve({ event: arg});
-            });
-
-            // capture event (closing Prompt.html dialog with x button)
-            dialog.addEventHandler(Office.EventType.DialogEventReceived, function(arg){
-                console.log(`Received event from prompt dialog.`);
-                console.table(arg);
-                resolve({ event: arg});
-            });
-        }
-        catch (e) {
-            console.log(e);
-            reject(e);
-        }
     });
 }
 
 async function getGraphToken(){
     const msalConfig = {
         auth: {
-            clientId: '[APPLICATION ID]',
-            authority: 'https://login.microsoftonline.com/[TENANT ID]'
+            clientId: 'a652e239-c37b-4d4c-986b-7cefabda1b0a',
+            authority: 'https://login.microsoftonline.com/f64e9def-96e2-421a-95bb-7ebc1f584e99'
         },
         system: {
             loggerOptions: {
@@ -99,16 +51,57 @@ async function getGraphToken(){
     }
 }
 
-async function moveEmailToDelete(arg) {
-    const id = Office.context.mailbox.item?.itemId.replaceAll("/", "-");
-    const emailAddress = Office.context.mailbox.userProfile.emailAddress;
-    const path = `https://graph.microsoft.com/v1.0/users/${emailAddress}/messages/${id}/move`;
-    let response = await fetch(path, {
-        method: "POST",
-        headers: {
-            Authorization: readWriteToken,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({destinationId: "deleteditems"})
-    });
+function openDialog() {
+    Office.context.ui.displayDialogAsync(PROMPT_URL, { height: 50, width: 50, displayInIframe: true }, dialogCallback);
+}
+
+function dialogCallback(asyncResult) {
+    if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
+        console.error("displayDialogAsync failed", asyncResult.error);
+        if (clickEvent) {
+            clickEvent.completed();
+        }
+        return;
+    }
+
+    dialog = asyncResult.value;
+
+    // capture message "cancel" or "move" sent from script in Prompt.html
+    dialog.addEventHandler(Office.EventType.DialogMessageReceived, messageHandler);
+
+    // capture event (closing Prompt.html dialog with x button)
+    dialog.addEventHandler(Office.EventType.DialogEventReceived, eventHandler);
+
+}
+
+function eventHandler(arg) {
+    console.log(`Received event from prompt dialog.`);
+    console.table(arg);
+    clickEvent.completed();
+}
+
+async function messageHandler(arg) {
+    console.log(`Received message "${arg.message}" from prompt dialog.`);
+    dialog.close();
+    switch (arg.message) {
+        case "cancel":
+            clickEvent.completed();
+            break;
+        case "move":
+            const id = Office.context.mailbox.item?.itemId.replaceAll("/", "-");
+            const emailAddress = Office.context.mailbox.userProfile.emailAddress;
+            const path = `https://graph.microsoft.com/v1.0/users/${emailAddress}/messages/${id}/move`;
+            let response = await fetch(path, {
+                method: "POST",
+                headers: {
+                    Authorization: readWriteToken,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({destinationId:"deleteditems"})
+            });
+            clickEvent.completed();
+            break;
+        default:
+            break;
+    }
 }
